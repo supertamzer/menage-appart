@@ -3,149 +3,300 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#EEF3F6">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Ménage">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%2315233B'/><text x='50' y='68' font-size='58' text-anchor='middle'>🧽</text></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%2315233B'/><text x='50' y='68' font-size='58' text-anchor='middle'>🧽</text></svg>">
 <title>Ménage de l'appart</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&display=swap" rel="stylesheet">
 <style>
+  /* ============ Jetons ============
+     Carrelage de salle de bain : fond blanc carrelage, joints gris-bleu, encre bleu nuit.
+     Les 4 colocs = 4 couleurs feutre, utilisées partout où la personne apparaît. */
   :root {
-    --bg: #f5f3ee; --card: #fff; --ink: #1d1d1b; --muted: #77746d; --line: #e4e0d7;
-    --ok: #2f8f5b; --warn: #e8a33a; --bad: #d0473c;
+    --tile: #EEF3F6;     /* fond */
+    --paper: #FFFFFF;    /* surfaces */
+    --grout: #D3DCE3;    /* joints / traits */
+    --ink: #15233B;      /* texte, actions */
+    --mute: #5B6879;     /* texte secondaire */
+    --ok: #1C8A5B; --warn: #C97A00; --bad: #D23B2F;
+    --display: "Bricolage Grotesque", system-ui, sans-serif;
+    --body: "Atkinson Hyperlegible", system-ui, sans-serif;
+    --r-lg: 28px; --r-md: 16px; --r-sm: 6px;
   }
   * { box-sizing: border-box; }
   [hidden] { display: none !important; }
-  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-         background: var(--bg); color: var(--ink); -webkit-tap-highlight-color: transparent; }
-  .wrap { max-width: 760px; margin: 0 auto; padding: 18px 14px 40px; }
-  h1 { font-size: 22px; margin: 0 0 12px; }
-  h2 { font-size: 16px; margin: 26px 0 10px; }
-  .bar-top { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); margin-bottom: 14px; flex-wrap: wrap; }
-  select { font-size: 15px; border: 1px solid var(--line); border-radius: 8px; padding: 4px 6px;
-           background: var(--card); color: var(--ink); }
-  .sync { margin-left: auto; font-size: 12px; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--tile); color: var(--ink); font: 16px/1.45 var(--body);
+         -webkit-tap-highlight-color: transparent; }
+  button, select, textarea, input { font: inherit; color: inherit; }
+  button { cursor: pointer; touch-action: manipulation; }
+  html { scroll-padding-top: 64px; scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  :focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; border-radius: 6px; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 0 16px calc(96px + env(safe-area-inset-bottom)); }
+  h2 { font: 700 21px/1.2 var(--display); margin: 34px 0 12px; letter-spacing: -0.01em; }
+  .sub { color: var(--mute); font-size: 14px; margin: -6px 0 12px; }
 
-  /* ---------- Tableau ---------- */
-  .legend { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
-  .chip { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 99px;
-          font-size: 13px; font-weight: 600; color: #fff; }
-  .table-wrap { overflow-x: auto; background: var(--card); border: 1px solid var(--line); border-radius: 14px; }
-  table { border-collapse: collapse; width: 100%; min-width: 560px; }
-  th, td { padding: 0; text-align: center; border-bottom: 1px solid var(--line); }
-  th { font-size: 11px; font-weight: 600; color: var(--muted); padding: 8px 2px; background: #faf9f6; }
-  th .ic { display: block; font-size: 20px; margin-bottom: 2px; }
-  th.first, td.first { position: sticky; left: 0; z-index: 1; text-align: left; }
-  th.first { background: #faf9f6; padding-left: 8px; }
-  td.first { padding: 6px 8px; min-width: 132px; background: inherit; }
-  td.first .dates { font-size: 12px; color: var(--muted); display: block; }
-  td.first select { margin-top: 3px; font-weight: 600; color: #fff; border: 0; padding: 3px 4px; font-size: 14px; }
-  tr.current td { border-top: 2px solid var(--ink); border-bottom: 2px solid var(--ink); }
-  tr.current td.first .dates::after { content: " · cette sem."; color: var(--ink); font-weight: 600; }
-  tr.past.incomplete td.first .dates::after { content: " · pas fini !"; color: var(--bad); font-weight: 600; }
-  td.cell button { width: 100%; height: 46px; border: 0; background: transparent; cursor: pointer; font-size: 20px;
-                   color: #c9c4b8; }
-  td.cell button.done { color: var(--ok); }
-  td.cell button.done::before { content: "✓"; font-weight: 800; }
-  td.cell button.todo::before { content: "○"; }
-  tr.past td.cell button.todo { color: var(--bad); }
-  tr.past td.cell button.todo::before { content: "✗"; }
-  td.count { font-size: 13px; font-weight: 600; padding: 0 8px; white-space: nowrap; }
-  @media (max-width: 480px) {
-    table { min-width: 0; table-layout: fixed; }
-    th.first, td.first { width: 96px; min-width: 96px; padding-left: 6px; padding-right: 4px; }
-    th { font-size: 9px; padding: 6px 0; }
-    th .ic { font-size: 20px; }
-    th .lbl { display: none; }
-    td.first select { font-size: 13px; max-width: 88px; }
-    td.first .dates { font-size: 11px; }
-    tr.current td.first .dates::after { content: ""; }
-    tr.past.incomplete td.first .dates::after { content: " ✗"; }
-    td.count, th.count { display: none; }
-    td.cell button { font-size: 17px; height: 44px; }
-  }
-  .more { display: flex; justify-content: space-between; margin-top: 8px; }
-  .link { background: none; border: 0; color: var(--muted); font-size: 13px; text-decoration: underline; cursor: pointer; padding: 6px 0; }
-  .hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
+  /* ============ En-tête ============ */
+  .top { position: sticky; top: 0; z-index: 4; display: flex; align-items: center; gap: 10px; margin: 0 -16px 12px;
+          padding: calc(10px + env(safe-area-inset-top)) 16px 10px; background: rgba(238,243,246,.92);
+          -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+  .brand { font: 800 18px/1 var(--display); letter-spacing: -0.02em; margin: 0; }
+  .me { margin-left: auto; display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 14px 0 10px;
+         border: 1.5px solid var(--grout); border-radius: 99px; background: var(--paper); font-weight: 700; font-size: 15px; }
+  .me i { width: 14px; height: 14px; border-radius: 50%; background: var(--c, var(--grout)); }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--grout); flex: none; }
+  .dot.on { background: var(--ok); } .dot.off { background: var(--bad); } .dot.local { background: var(--warn); }
 
-  /* ---------- Réserves ---------- */
-  .item { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; margin-bottom: 10px; }
-  .item .top { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 16px; }
-  .item .top small { margin-left: auto; font-weight: 400; font-size: 12px; color: var(--muted); text-align: right; }
-  .item .bought { font-size: 13px; color: var(--muted); margin-top: 8px; }
-  .seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 10px; }
-  .seg button { height: 40px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg);
-                font-size: 14px; cursor: pointer; color: var(--ink); }
-  .seg button.on.s0 { background: var(--ok); border-color: var(--ok); color: #fff; }
-  .seg button.on.s1 { background: var(--warn); border-color: var(--warn); color: #fff; }
-  .seg button.on.s2 { background: var(--bad); border-color: var(--bad); color: #fff; }
-  .buy { margin-top: 8px; width: 100%; height: 42px; border-radius: 10px; border: 2px solid var(--ink);
-         background: #fff; font-size: 15px; font-weight: 600; cursor: pointer; color: var(--ink); }
-  .scores { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-  .score { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 10px 6px; text-align: center;
-           border-top: 4px solid var(--c); }
-  .score b { display: block; font-size: 18px; }
-  .score span { font-size: 13px; color: var(--muted); }
-  textarea { width: 100%; min-height: 70px; border: 1px solid var(--line); border-radius: 12px; padding: 10px;
-             font: inherit; font-size: 15px; background: var(--card); resize: vertical; }
+  /* ============ Bloc « cette semaine » (l'élément fort) ============ */
+  .hero { background: var(--p); color: #fff; border-radius: var(--r-lg); padding: 20px 18px 18px;
+          box-shadow: 0 14px 30px -18px var(--p); }
+  .hero-line { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: 15px; opacity: .92; }
+  .who { font: 800 clamp(46px, 15vw, 84px)/.9 var(--display); letter-spacing: -0.04em; margin: 8px 0 4px;
+         font-variation-settings: "opsz" 96; }
+  .hero-status { font-size: 16px; margin: 0 0 14px; }
+  .chips { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .chip { min-width: 0; line-height: 1.15; display: flex; align-items: center; gap: 8px; min-height: 52px; padding: 8px 10px; border-radius: var(--r-md);
+          border: 2px solid rgba(255,255,255,.45); background: rgba(255,255,255,.12); color: #fff;
+          font-weight: 700; font-size: 15px; text-align: left; transition: background .15s, color .15s; }
+  .chip .ic { font-size: 22px; line-height: 1; }
+  .chip .lbl { display: flex; flex-direction: column; min-width: 0; }
+  .chip .by { font-size: 12px; font-weight: 400; opacity: .85; }
+  .chip .tick { margin-left: auto; width: 22px; height: 22px; border-radius: 50%; border: 2px solid rgba(255,255,255,.7);
+                display: grid; place-items: center; font-size: 14px; flex: none; }
+  .chip[aria-pressed="true"] { background: #fff; color: var(--h, var(--p)); border-color: #fff; }
+  .chip[aria-pressed="true"] .tick { background: var(--h, var(--p)); border-color: var(--h, var(--p)); color: #fff; }
+  .chip[aria-pressed="true"] .tick::before { content: "✓"; font-weight: 800; }
+  .chip:focus-visible { outline-color: #fff; }
+  .hero-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; font-size: 14px; }
+  .swap { min-height: 40px; padding: 0 14px; border-radius: 99px; border: 1.5px solid rgba(255,255,255,.5);
+          background: transparent; color: #fff; font-weight: 700; font-size: 14px; }
+  .done-all { font-weight: 700; }
+  @media (min-width: 560px) { .chips { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 
-  /* ---------- Pop-up & connexion ---------- */
-  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: flex; align-items: center;
-             justify-content: center; padding: 20px; z-index: 10; }
-  .modal { background: #fff; border-radius: 18px; padding: 22px; max-width: 380px; width: 100%; box-shadow: 0 10px 40px rgba(0,0,0,.25); }
-  .modal h3 { margin: 0 0 10px; font-size: 19px; }
-  .modal p { margin: 6px 0; font-size: 15px; line-height: 1.4; }
-  .modal input { width: 100%; font-size: 17px; padding: 12px; border: 1px solid var(--line); border-radius: 10px; margin: 10px 0; }
-  .modal .btn { width: 100%; height: 48px; border: 0; border-radius: 12px; background: var(--ink); color: #fff;
-                font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 8px; }
-  .modal .err { color: var(--bad); font-size: 14px; min-height: 18px; }
+  /* ============ Planning en carreaux ============ */
+  .plan { background: var(--grout); border-radius: var(--r-md); padding: 3px; overflow-x: auto; }
+  .plan table { border-collapse: separate; border-spacing: 3px; width: 100%; }
+  .plan th { font-weight: 400; padding: 6px 0 2px; }
+  .plan th span { font-size: 19px; display: block; }
+  .plan th.wk { text-align: left; font-size: 12px; color: var(--mute); padding-left: 8px; }
+  .plan td { background: var(--paper); border-radius: var(--r-sm); padding: 0; height: 44px; text-align: center; }
+  .plan td.wk { text-align: left; padding: 4px 6px; width: 92px; background: var(--paper); }
+  @media (max-width: 400px) { .plan table { border-spacing: 2px; } .cell, .plan td { height: 40px; } .plan th span { font-size: 16px; } }
+  .wk .dates { display: block; font-size: 12px; color: var(--mute); white-space: nowrap; }
+  .wk .pill { border: 0; border-radius: 99px; background: var(--p); color: #fff; font-weight: 700; font-size: 13px;
+              padding: 3px 10px; margin-top: 2px; min-height: 24px; }
+  .cell { width: 100%; height: 44px; border: 0; background: transparent; border-radius: var(--r-sm);
+          font-size: 17px; font-weight: 800; color: transparent; }
+  .cell.done { background: var(--h, var(--p)); color: #fff; }
+  .cell.done::before { content: "✓"; }
+  tr.past .cell.todo { background: #FBE3E0; color: var(--bad); }
+  tr.past .cell.todo::before { content: "✗"; }
+  tr.now td { box-shadow: inset 0 0 0 2px var(--p); }
+  tr.now td.wk { box-shadow: inset 4px 0 0 var(--p); }
+  tr.now td.wk .dates { color: var(--ink); font-weight: 700; }
+  .plan-more { display: flex; justify-content: space-between; margin-top: 6px; }
+  .ghost { background: none; border: 0; color: var(--mute); font-size: 14px; padding: 10px 2px; text-decoration: underline;
+           text-underline-offset: 3px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13px; color: var(--mute); margin: 8px 2px 0; }
+
+  /* ============ Réserves ============ */
+  .panel { background: var(--paper); border-radius: var(--r-md); border: 1.5px solid var(--grout); }
+  .supply { padding: 14px; }
+  .supply + .supply { border-top: 1.5px solid var(--grout); }
+  .supply-head { display: flex; align-items: center; gap: 10px; }
+  .supply-head .ic { font-size: 24px; }
+  .supply-head b { font: 700 17px/1.2 var(--display); }
+  .badge { margin-left: auto; font-size: 13px; font-weight: 700; padding: 3px 10px; border-radius: 99px; white-space: nowrap; }
+  .badge.l0 { background: #DDF1E7; color: var(--ok); }
+  .badge.l1 { background: #FCEBCB; color: #8A5300; }
+  .badge.l2 { background: #FBE3E0; color: var(--bad); }
+  .seg { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 10px; background: var(--tile);
+         border-radius: 12px; padding: 3px; gap: 3px; }
+  .seg button { border: 0; background: transparent; border-radius: 9px; min-height: 40px; font-size: 14px; color: var(--mute); }
+  .seg button[aria-pressed="true"] { background: var(--paper); color: var(--ink); font-weight: 700;
+                                     box-shadow: 0 1px 0 var(--grout), 0 0 0 1.5px var(--grout); }
+  .supply-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; }
+  .meta { font-size: 13px; color: var(--mute); }
+  .btn { min-height: 44px; padding: 0 16px; border-radius: 12px; font-weight: 700; font-size: 15px; white-space: nowrap; }
+  .btn-primary { background: var(--ink); color: #fff; border: 0; }
+  .btn-secondary { background: var(--paper); color: var(--ink); border: 1.5px solid var(--ink); }
+  .btn:disabled { background: var(--tile); color: var(--mute); border-color: var(--grout); cursor: default; }
+
+  /* ============ Notes ============ */
+  textarea { width: 100%; min-height: 96px; border: 1.5px solid var(--grout); border-radius: var(--r-md); padding: 12px 14px;
+             background: var(--paper); resize: vertical; font-size: 16px; }
+  textarea:focus-visible { outline: 3px solid var(--ink); outline-offset: 0; }
+  .notes-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 8px; }
+  .history { margin-top: 18px; }
+  .history h3 { font: 700 16px/1.2 var(--display); margin: 0 0 8px; }
+  .note { padding: 10px 0 10px 14px; border-left: 4px solid var(--p); margin-left: 4px; }
+  .note + .note { margin-top: 6px; }
+  .note-head { font-size: 13px; color: var(--mute); }
+  .note-head b { color: var(--p); }
+  .note-body { white-space: pre-wrap; margin-top: 2px; }
+  .empty { color: var(--mute); font-size: 14px; }
+
+  /* ============ Compteurs ============ */
+  .counts { width: 100%; border-collapse: collapse; }
+  .counts th { text-align: right; font-size: 13px; font-weight: 400; color: var(--mute); padding: 10px 14px 6px; }
+  .counts th:first-child { text-align: left; }
+  .counts td { padding: 10px 14px; border-top: 1.5px solid var(--grout); text-align: right;
+               font: 700 18px/1 var(--display); font-variant-numeric: tabular-nums; }
+  .counts td:first-child { text-align: left; font: 700 16px/1 var(--body); }
+  .counts td:first-child::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 50%;
+                                   background: var(--p); margin-right: 8px; vertical-align: -1px; }
+  .logout { display: block; margin: 30px auto 0; }
+
+  /* ============ Code d'accès ============ */
+  .gate { position: fixed; inset: 0; background: var(--tile); display: grid; place-items: center; padding: 24px; z-index: 20; }
+  .gate-box { width: 100%; max-width: 320px; text-align: center; }
+  .gate h1 { font: 800 34px/1 var(--display); letter-spacing: -0.03em; margin: 0 0 6px; }
+  .gate p { color: var(--mute); margin: 0; }
+  .pins { display: flex; justify-content: center; gap: 14px; margin: 26px 0 8px; }
+  .pins span { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--ink); }
+  .pins span.f { background: var(--ink); }
+  .pins.shake { animation: shake .35s; }
+  @keyframes shake { 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+  .gate-msg { min-height: 44px; font-size: 14px; color: var(--mute); }
+  .gate-msg.err { color: var(--bad); }
+  .pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 6px; }
+  .pad button { height: 64px; border-radius: 50%; border: 1.5px solid var(--grout); background: var(--paper);
+                font: 700 26px/1 var(--display); width: 64px; justify-self: center; }
+  .pad button:active { background: var(--grout); }
+  .pad .del { border: 0; background: transparent; font-size: 22px; }
+  .create { margin-top: 10px; }
+
+  /* ============ Pop-up et message ============ */
+  .overlay { position: fixed; inset: 0; background: rgba(21,35,59,.5); display: grid; place-items: end center;
+             padding: 16px; z-index: 30; }
+  .sheet { background: var(--paper); border-radius: var(--r-lg); padding: 22px 20px 18px; width: 100%; max-width: 420px;
+           margin-bottom: env(safe-area-inset-bottom); }
+  .sheet h3 { font: 800 23px/1.15 var(--display); letter-spacing: -0.02em; margin: 0 0 10px; }
+  .sheet p { margin: 6px 0; }
+  .sheet .btn { width: 100%; margin-top: 14px; min-height: 50px; }
+  @media (min-width: 560px) { .overlay { place-items: center; } }
+  .toast { position: fixed; left: 50%; bottom: calc(78px + env(safe-area-inset-bottom)); transform: translateX(-50%);
+           background: var(--ink); color: #fff; border-radius: 14px; padding: 8px 8px 8px 16px; display: flex; align-items: center;
+           gap: 14px; z-index: 25; max-width: calc(100% - 24px); }
+  .toast span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .toast button { background: #fff; color: var(--ink); border: 0; border-radius: 9px; min-height: 40px; padding: 0 14px; font-weight: 700; }
+
+  /* Choix d'une personne */
+  .who-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+  .who-grid button { min-height: 60px; border: 3px solid transparent; border-radius: var(--r-md); background: var(--c); color: #fff;
+                     font: 700 19px/1 var(--display); }
+  .who-grid button[aria-pressed="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 3px #fff; }
+  .btn-ghost { background: transparent; border: 0; color: var(--mute); text-decoration: underline; text-underline-offset: 3px; }
+
+  /* Barre du bas */
+  .tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; display: grid; grid-template-columns: repeat(4, 1fr);
+            background: rgba(255,255,255,.95); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+            border-top: 1.5px solid var(--grout); padding-bottom: env(safe-area-inset-bottom); }
+  .tabbar a { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 0 7px; min-height: 56px;
+              color: var(--mute); text-decoration: none; font-size: 12px; font-weight: 700; }
+  .tabbar a span { font-size: 20px; line-height: 1; }
+  .tabbar a.on { color: var(--ink); }
+  .tabbar a .badge-dot { position: absolute; }
+  @media (min-width: 760px) { .tabbar { left: 50%; right: auto; width: 420px; transform: translateX(-50%); bottom: 12px;
+                              border: 1.5px solid var(--grout); border-radius: 18px; padding-bottom: 0; } }
+
+  /* Mouvement : un seul moment, quand on coche une tâche */
+  @keyframes pop { 0% { transform: scale(.94); } 60% { transform: scale(1.03); } 100% { transform: scale(1); } }
+  .chip.just { animation: pop .28s ease-out; }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 </style>
 </head>
 <body>
 
-<!-- Connexion -->
-<div class="overlay" id="login" hidden>
-  <form class="modal" id="loginForm">
-    <h3>🔒 Ménage de l'appart</h3>
-    <p>Entre le mot de passe de l'appart.</p>
-    <input id="pwd" type="password" autocomplete="current-password" placeholder="Mot de passe" required>
-    <div class="err" id="loginErr"></div>
-    <button class="btn" type="submit">Entrer</button>
-  </form>
+<!-- Code d'accès -->
+<div class="gate" id="login" hidden>
+  <div class="gate-box">
+    <h1>Ménage de l'appart</h1>
+    <p>Tape le code de l'appart.</p>
+    <div class="pins" id="pins" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+    <div class="gate-msg" id="loginErr" role="status" aria-live="polite"></div>
+    <div class="pad" id="pad" aria-label="Clavier du code">
+      <button>1</button><button>2</button><button>3</button>
+      <button>4</button><button>5</button><button>6</button>
+      <button>7</button><button>8</button><button>9</button>
+      <span></span><button>0</button><button class="del" aria-label="Effacer">⌫</button>
+    </div>
+    <button class="btn btn-primary create" id="createSpace" hidden>Créer l'espace avec ce code</button>
+  </div>
 </div>
 
 <!-- Pop-up -->
-<div class="overlay" id="popup" hidden>
-  <div class="modal">
+<div class="overlay" id="popup" hidden role="dialog" aria-modal="true" aria-labelledby="popTitle">
+  <div class="sheet">
     <h3 id="popTitle"></h3>
     <div id="popBody"></div>
-    <button class="btn" id="popOk">OK</button>
+    <button class="btn btn-primary" id="popOk">OK</button>
   </div>
 </div>
 
+<!-- Choix d'une personne -->
+<div class="overlay" id="picker" hidden role="dialog" aria-modal="true" aria-labelledby="pickTitle">
+  <div class="sheet">
+    <h3 id="pickTitle"></h3>
+    <p class="meta" id="pickText"></p>
+    <div class="who-grid" id="pickGrid"></div>
+    <button class="btn btn-ghost" id="pickCancel">Annuler</button>
+  </div>
+</div>
+
+<nav class="tabbar" id="tabbar" hidden aria-label="Aller à">
+  <a href="#hero" class="on"><span aria-hidden="true">🧽</span>Semaine</a>
+  <a href="#planning"><span aria-hidden="true">🗓️</span>Planning</a>
+  <a href="#sec-stock"><span aria-hidden="true">🧻</span>Réserves</a>
+  <a href="#sec-notes"><span aria-hidden="true">📝</span>Notes</a>
+</nav>
+
+<div class="toast" id="toast" hidden role="status" aria-live="polite"><span></span><button>Annuler</button></div>
+
 <div class="wrap" id="app" hidden>
-  <h1>🧽 Ménage de l'appart</h1>
-  <div class="bar-top">Je suis :
-    <select id="me"><option value="">— choisir —</option></select>
-    <span id="sync" class="sync"></span>
-  </div>
+  <header class="top">
+    <p class="brand">Ménage</p>
+    <button class="me" id="meBtn" aria-label="Changer qui je suis"><i></i><span>Qui es-tu ?</span></button>
+    <span class="dot" id="sync" title=""></span>
+  </header>
 
+  <section class="hero" id="hero" aria-label="Cette semaine"></section>
+  
+
+  <h2 id="planning">Planning</h2>
+  <p class="sub">Une personne par semaine, toutes les tâches. Touche un carreau pour cocher ou décocher, il prend la couleur de qui l'a fait. Touche un prénom pour changer la personne de la semaine.</p>
+  <div class="plan"><table id="grid"></table></div>
   <div class="legend" id="legend"></div>
-  <p class="hint" style="margin:-4px 0 8px">🍳 Cuisine · 🛋️ Salon · 🗑️ Poubelles · 🛁 Salle de bain · 🚽 WC · 🧹 Sols · 🚪 Couloir · 🪴 Plantes</p>
-  <div class="table-wrap"><table id="grid"></table></div>
-  <div class="more">
-    <button class="link" id="older">↑ Semaines d'avant</button>
-    <button class="link" id="newer">Semaines suivantes ↓</button>
+  <div class="plan-more">
+    <button class="ghost" id="older">Voir les semaines d'avant</button>
+    <button class="ghost" id="newer">Voir plus loin</button>
   </div>
-  <p class="hint">Touche une case pour cocher ✓ ou décocher. Pour échanger une semaine, change le nom dans la 1re colonne.</p>
 
-  <h2>📝 Notes de la semaine</h2>
-  <textarea id="notes" placeholder="Absences, échanges, remarques…"></textarea>
+  <h2 id="sec-stock">Réserves</h2>
+  <div class="panel" id="stock"></div>
 
-  <h2>🛒 Réserves</h2>
-  <div id="stock"></div>
-  <h2>🧾 Qui a acheté (total)</h2>
-  <div class="scores" id="buyScores"></div>
+  <h2 id="sec-notes">Notes de la semaine</h2>
+  <textarea id="notes" placeholder="Absences, changements de semaine, remarques…" aria-label="Notes de la semaine"></textarea>
+  <div class="notes-bar">
+    <span class="meta" id="notesStatus" role="status" aria-live="polite"></span>
+    <button class="btn btn-primary" id="saveNotes">Enregistrer</button>
+  </div>
+  <div class="history">
+    <h3>Notes des semaines passées</h3>
+    <div id="history"></div>
+  </div>
 
-  <h2>🏆 Tâches faites (total)</h2>
-  <div class="scores" id="scores"></div>
+  <h2>Compteurs</h2>
+  <div class="panel"><table class="counts" id="counts"></table></div>
 
-  <p style="margin-top:28px"><button class="link" id="logout">Se déconnecter / changer de mot de passe</button></p>
+  <button class="ghost logout" id="logout">Se déconnecter</button>
 </div>
 
 <script type="module">
@@ -162,25 +313,26 @@ const FIREBASE_CONFIG = {
 const LOCAL_MODE = new URLSearchParams(location.search).has("local");
 
 const PEOPLE = ["Connor", "Rémi", "Noé", "Antoine"];
-const COLORS = { "Connor": "#2f6fd6", "Rémi": "#d0473c", "Noé": "#2f8f5b", "Antoine": "#8a4fc9" };
-const TINT   = { "Connor": "#eaf1fc", "Rémi": "#fcecea", "Noé": "#e8f4ed", "Antoine": "#f3ecfa" };
+const COLORS = { "Connor": "#2563C9", "Rémi": "#D23B2F", "Noé": "#1C8A5B", "Antoine": "#7A45C2" };
 const TASKS = [
-  { id: "kitchen", name: "Cuisine",       short: "Cuisine", icon: "🍳" },
-  { id: "living",  name: "Salon",         short: "Salon",   icon: "🛋️" },
-  { id: "trash",   name: "Poubelles",     short: "Poub.",   icon: "🗑️" },
-  { id: "bath",    name: "Salle de bain", short: "SdB",     icon: "🛁" },
-  { id: "toilets", name: "Toilettes",     short: "WC",      icon: "🚽" },
-  { id: "floors",  name: "Sols",          short: "Sols",    icon: "🧹" },
-  { id: "hallway", name: "Couloir",       short: "Couloir", icon: "🚪" },
-  { id: "plants",  name: "Plantes",       short: "Plantes", icon: "🪴" },
+  { id: "kitchen", name: "Cuisine",       icon: "🍳" },
+  { id: "living",  name: "Salon",         icon: "🛋️" },
+  { id: "trash",   name: "Poubelles",     icon: "🗑️" },
+  { id: "bath",    name: "Salle de bain", icon: "🛁" },
+  { id: "toilets", name: "Toilettes",     icon: "🚽" },
+  { id: "floors",  name: "Sols",          icon: "🧹" },
+  { id: "hallway", name: "Couloir",       icon: "🚪" },
+  { id: "plants",  name: "Plantes",       icon: "🪴" },
 ];
 const SUPPLIES = [
   { id: "products", name: "Produits ménagers", icon: "🧴" },
   { id: "bags",     name: "Sacs poubelle",     icon: "🛍️" },
   { id: "tp",       name: "PQ",                icon: "🧻" },
 ];
-const LEVELS = ["✅ OK", "⚠️ Bientôt fini", "🛒 À acheter"];
-// Rotation : 1 personne par semaine. Lundi 9 nov. 2026 = Connor, puis Rémi, Noé, Antoine…
+const LEVELS = ["Il y en a", "Bientôt fini", "À acheter"];
+// Rotation : 1 personne par semaine, jamais deux fois à la suite, sans fin.
+// 9–15 nov. = Connor, 16–22 nov. = Antoine, puis Rémi, Noé, et on recommence.
+const ROTATION = ["Connor", "Antoine", "Rémi", "Noé"];
 const REF_MONDAY = new Date(2026, 10, 9);
 const MONTHS = ["janv.","févr.","mars","avr.","mai","juin","juil.","août","sept.","oct.","nov.","déc."];
 
@@ -192,9 +344,11 @@ const fromKey = k => { const [y, m, d] = k.split("-").map(Number); return new Da
 const weeksBetween = (a, b) => Math.round((b - a) / (7 * 864e5));
 const mod = (n, m) => ((n % m) + m) % m;
 const fmt = d => `${d.getDate()} ${MONTHS[d.getMonth()]}`;
+const span = mon => { const e = addDays(mon, 6); return mon.getMonth() === e.getMonth() ? `${mon.getDate()}–${fmt(e)}` : `${fmt(mon)} – ${fmt(e)}`; };
 const today = () => fmt(new Date());
 const thisMonday = mondayOf(new Date());
-const defaultPerson = monday => PEOPLE[mod(weeksBetween(REF_MONDAY, monday), PEOPLE.length)];
+const defaultPerson = monday => ROTATION[mod(weeksBetween(REF_MONDAY, monday), ROTATION.length)];
+const esc = t => String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 // ---------- État ----------
 let data = { weeks: {}, stock: {} };
@@ -203,188 +357,342 @@ let write = () => {};
 const START = REF_MONDAY;
 const range = { from: Math.max(-3, weeksBetween(thisMonday, START)), to: 5 };
 const $ = id => document.getElementById(id);
-const meSel = $("me"), sync = $("sync");
+const sync = $("sync");
+const setSync = (cls, label) => { sync.className = "dot " + cls; sync.title = label; sync.setAttribute("aria-label", label); };
 
-meSel.innerHTML += PEOPLE.map(p => `<option>${p}</option>`).join("");
-meSel.value = localStorage.getItem("menage-me") || "";
-meSel.onchange = () => { localStorage.setItem("menage-me", meSel.value); render(); };
+// « Qui je suis » : gardé sur l'appareil, sert à signer les coches et les achats.
+const meSel = { get value() { const v = localStorage.getItem("menage-me"); return PEOPLE.includes(v) ? v : ""; } };
+function drawMe() {
+  const me = meSel.value, b = $("meBtn");
+  b.style.setProperty("--c", me ? COLORS[me] : "var(--grout)");
+  b.querySelector("span").textContent = me || "Qui es-tu ?";
+}
+// Feuille de choix d'une personne (remplace les menus déroulants, plus simple au pouce)
+function pickPerson(title, text, current, cancellable = true) {
+  return new Promise(resolve => {
+    $("pickTitle").textContent = title; $("pickText").textContent = text;
+    $("pickGrid").innerHTML = PEOPLE.map(p => `<button style="--c:${COLORS[p]}" aria-pressed="${p === current}">${p}</button>`).join("");
+    $("pickCancel").hidden = !cancellable;
+    const close = v => { $("picker").hidden = true; resolve(v); };
+    $("pickGrid").querySelectorAll("button").forEach(b => b.onclick = () => close(b.textContent));
+    $("pickCancel").onclick = () => close(null);
+    $("picker").hidden = false;
+    $("pickGrid").querySelector("button").focus();
+  });
+}
+async function askMe(cancellable = true) {
+  const p = await pickPerson("Qui es-tu ?", "Ton prénom signe ce que tu coches, avec ta couleur. Il est gardé sur ce téléphone.", meSel.value, cancellable);
+  if (p) { localStorage.setItem("menage-me", p); drawMe(); render(); }
+  return p;
+}
+$("meBtn").onclick = () => askMe();
+drawMe();
 
 const weekOf = k => (data.weeks || {})[k] || {};
 const personOf = k => weekOf(k).person || defaultPerson(fromKey(k));
 
 // ---------- Connexion ----------
-// Le mot de passe sert de clé : les données sont rangées sous appart/<mot de passe>/.
-// Les règles Firebase interdisent de lister appart/, donc sans le mot de passe on ne voit ni ne modifie rien.
-const BAD = /[.#$\[\]\/]/;
-async function connect(pwd, createIfMissing) {
+// Le code à 4 chiffres est transformé en clé (empreinte SHA-256) : il n'apparaît jamais en clair dans la base.
+// Les règles Firebase interdisent de lister appart/, donc sans le code on ne voit ni ne modifie rien.
+async function keyFromPin(pin) {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("menage-appart:" + pin));
+  return "k" + [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("").slice(0, 32);
+}
+const loaded = new Set();   // branches reçues (weeks, stock)
+async function connect(pin, createIfMissing) {
+  const key = await keyFromPin(pin);
   if (LOCAL_MODE) {
-    const KEY = "menage-local-" + pwd;
+    const KEY = "menage-local-" + key;
     data = JSON.parse(localStorage.getItem(KEY) || '{"weeks":{},"stock":{}}');
-    sync.textContent = "📱 local (test)";
+    setSync("local", "Mode test : données sur cet appareil");
+    loaded.add("weeks"); loaded.add("stock");
     write = (path, value) => {
       const parts = path.split("/"); let o = data;
       parts.slice(0, -1).forEach(p => o = (o[p] ||= {}));
       if (value === null) delete o[parts.at(-1)]; else o[parts.at(-1)] = value;
       localStorage.setItem(KEY, JSON.stringify(data)); render();
+      return Promise.resolve();
     };
     return true;
   }
   const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
   const { getDatabase, ref, onValue, set, get } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
   const db = getDatabase(initializeApp(FIREBASE_CONFIG));
-  const base = `appart/${pwd}`;
+  const base = `appart/${key}`;
   const meta = await get(ref(db, `${base}/meta`));
   if (!meta.exists()) {
     if (!createIfMissing) return "new";
     await set(ref(db, `${base}/meta`), { created: Date.now() });
   }
-  sync.textContent = "⏳ connexion…";
-  for (const key of ["weeks", "stock"]) {
-    onValue(ref(db, `${base}/${key}`), snap => { data[key] = snap.val() || {}; sync.textContent = "🟢 en ligne"; render(); checkPopup(); },
-            err => { sync.textContent = "🔴 erreur d'accès"; console.error(err); });
+  setSync("", "Connexion…");
+  for (const k of ["weeks", "stock"]) {
+    onValue(ref(db, `${base}/${k}`), snap => { data[k] = snap.val() || {}; loaded.add(k); setSync("on", "En ligne"); render(); checkPopup(); },
+            err => { setSync("off", "Erreur d'accès"); console.error(err); });
   }
+  onValue(ref(db, ".info/connected"), s => { if (!s.val() && loaded.size) setSync("off", "Hors ligne, les changements partiront au retour du réseau"); });
   write = (path, value) => set(ref(db, `${base}/${path}`), value);
   return true;
 }
 
-let pendingNew = null;
-$("loginForm").onsubmit = async e => {
-  e.preventDefault();
-  const pwd = $("pwd").value.trim(), err = $("loginErr");
-  if (pwd.length < 10) { err.textContent = "Au moins 10 caractères."; return; }
-  if (BAD.test(pwd)) { err.textContent = "Évite les caractères . # $ [ ] /"; return; }
-  err.textContent = "Connexion…";
+// Clavier du code
+let pin = "";
+const pinsEl = $("pins"), msg = $("loginErr");
+function drawPins() { [...pinsEl.children].forEach((s, i) => s.classList.toggle("f", i < pin.length)); }
+function fail(text) {
+  msg.textContent = text; msg.className = "gate-msg err";
+  pinsEl.classList.remove("shake"); void pinsEl.offsetWidth; pinsEl.classList.add("shake");
+}
+async function tryPin(create) {
+  msg.textContent = "Connexion…"; msg.className = "gate-msg";
   try {
-    const res = await connect(pwd, pendingNew === pwd);
+    const res = await connect(pin, create);
     if (res === "new") {
-      pendingNew = pwd;
-      err.textContent = "Ce mot de passe n'existe pas encore. Vérifie-le, ou appuie encore sur Entrer pour créer l'espace de l'appart avec.";
-      return;
+      msg.textContent = "Ce code n'existe pas encore. Vérifie-le, ou crée l'espace de l'appart avec.";
+      msg.className = "gate-msg"; $("createSpace").hidden = false; return;
     }
-    localStorage.setItem("menage-pwd", pwd);
-    $("login").hidden = true; $("app").hidden = false;
-    render(); checkPopup();
-  } catch (x) {
-    console.error(x); err.textContent = "Impossible de se connecter (réseau ou mot de passe).";
-  }
-};
+    localStorage.setItem("menage-pwd", pin);
+    $("login").hidden = true; showApp();
+  } catch (x) { console.error(x); pin = ""; drawPins(); fail("Connexion impossible. Vérifie le réseau et réessaie."); }
+}
+$("pad").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  $("createSpace").hidden = true;
+  if (b.classList.contains("del")) pin = pin.slice(0, -1);
+  else if (pin.length < 4) pin += b.textContent;
+  msg.textContent = ""; drawPins();
+  if (pin.length === 4) tryPin(false);
+});
+document.addEventListener("keydown", e => {
+  if ($("login").hidden) return;
+  if (/^\d$/.test(e.key) && pin.length < 4) { pin += e.key; drawPins(); if (pin.length === 4) tryPin(false); }
+  if (e.key === "Backspace") { pin = pin.slice(0, -1); drawPins(); $("createSpace").hidden = true; }
+});
+$("createSpace").onclick = () => { $("createSpace").hidden = true; tryPin(true); };
 $("logout").onclick = () => { localStorage.removeItem("menage-pwd"); location.reload(); };
 
-// ---------- Pop-up ----------
-function popup(title, html, onOk) {
-  $("popTitle").textContent = title; $("popBody").innerHTML = html; $("popup").hidden = false;
-  $("popOk").onclick = () => { $("popup").hidden = true; onOk && onOk(); };
+// ---------- Changer la personne d'une semaine ----------
+// Seule la semaine choisie change : le tournus (Connor, Antoine, Rémi, Noé) continue normalement autour.
+// Libre : vous mettez qui vous voulez, même deux semaines de suite.
+function setWeek(k, x) {
+  const mon = fromKey(k), old = personOf(k);
+  if (x === old) return;
+  const before = weekOf(k).person ?? null;
+  write(`weeks/${k}/person`, x === defaultPerson(mon) ? null : x);
+  toast(`${x} fait la semaine du ${span(mon)}`, () => write(`weeks/${k}/person`, before));
 }
-let popupShown = false;
+
+// ---------- Message « Annuler » ----------
+let toastTimer;
+function toast(text, undo) {
+  const el = $("toast");
+  el.querySelector("span").textContent = text;
+  el.querySelector("button").onclick = () => { undo(); el.hidden = true; };
+  el.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.hidden = true, 5000);
+}
+function toggleTask(k, t) {
+  const task = TASKS.find(x => x.id === t);
+  const prev = (weekOf(k).done || {})[t] || null;
+  const by = meSel.value || personOf(k);
+  write(`weeks/${k}/done/${t}`, prev ? null : { by, date: today() });
+  navigator.vibrate?.(12);
+  const helped = !prev && by !== personOf(k);
+  toast(prev ? `${task.name} décoché` : helped ? `${task.name} coché par ${by}, merci !` : `${task.name} coché`,
+        () => write(`weeks/${k}/done/${t}`, prev));
+  return !prev;
+}
+
+// ---------- Pop-ups (l'un après l'autre) ----------
+const queue = [];
+function popup(title, html, onOk) { queue.push({ title, html, onOk }); if (queue.length === 1) showNext(); }
+function showNext() {
+  const p = queue[0]; if (!p) return;
+  $("popTitle").textContent = p.title; $("popBody").innerHTML = p.html; $("popup").hidden = false; $("popOk").focus();
+  $("popOk").onclick = () => { $("popup").hidden = true; p.onOk && p.onOk(); queue.shift(); setTimeout(showNext, 150); };
+}
+let popupsDone = false;
+function showApp() {
+  $("app").hidden = false; $("tabbar").hidden = false;
+  render();
+  if (!meSel.value) askMe(false).then(checkPopup); else checkPopup();
+}
 function checkPopup() {
-  if (popupShown || $("app").hidden) return;
-  // Semaine dernière pas finie → pop-up (une fois par appareil, re-affiché si ça change)
-  const lastMon = addDays(thisMonday, -7);
-  const k = keyOf(lastMon);
-  if (lastMon < START) return;
-  const who = personOf(k);
-  const missing = TASKS.filter(t => !(weekOf(k).done || {})[t.id]);
-  const seenKey = "menage-popup-" + k;
-  if (missing.length && localStorage.getItem(seenKey) !== String(missing.length)) {
-    popupShown = true;
-    popup("⚠️ Ménage pas terminé",
-      `<p><b style="color:${COLORS[who]}">${who}</b> n'a pas fini sa semaine (${fmt(fromKey(k))} – ${fmt(addDays(fromKey(k), 6))}).</p>
-       <p>Il manque : ${missing.map(t => t.icon + " " + t.name).join(", ")}.</p>`,
-      () => localStorage.setItem(seenKey, String(missing.length)));
-    return;
+  if (!meSel.value && !$("picker").hidden) return;
+  if (popupsDone || $("app").hidden || !(loaded.has("weeks") && loaded.has("stock"))) return;
+  popupsDone = true;
+  const list = ts => ts.map(t => `${t.icon} ${t.name}`).join(", ");
+
+  // 1. Semaine dernière pas finie (une fois par appareil, re-affiché si ça change)
+  const lastMon = addDays(thisMonday, -7), k = keyOf(lastMon);
+  if (lastMon >= START) {
+    const who = personOf(k);
+    const missing = TASKS.filter(t => !(weekOf(k).done || {})[t.id]);
+    const seenKey = "menage-popup-" + k;
+    if (missing.length && localStorage.getItem(seenKey) !== String(missing.length)) {
+      popup(`${who} n'a pas fini sa semaine`,
+        `<p>Semaine du ${span(lastMon)}. Il manque : ${list(missing)}.</p>`,
+        () => localStorage.setItem(seenKey, String(missing.length)));
+    }
   }
-  // Dimanche : rappel à la personne de la semaine s'il reste des tâches
+  // 2. Réserves bientôt finies ou à acheter, à chaque ouverture
+  const stock = data.stock || {};
+  const low = SUPPLIES.filter(x => (stock[x.id]?.level || 0) > 0);
+  if (low.length) {
+    popup(low.length > 1 ? "Des réserves sont presque vides" : "Une réserve est presque vide",
+      low.map(x => `<p>${x.icon} <b>${x.name}</b> : ${LEVELS[stock[x.id].level].toLowerCase()}</p>`).join("") +
+      `<p class="meta">Quand c'est acheté, appuie sur « J'en ai acheté » dans Réserves.</p>`);
+  }
+  // 3. Dimanche : rappel à la personne de la semaine
   const cur = keyOf(thisMonday), curWho = personOf(cur);
   const left = TASKS.filter(t => !(weekOf(cur).done || {})[t.id]);
   const remindKey = "menage-remind-" + cur;
   if (new Date().getDay() === 0 && left.length && meSel.value === curWho && !localStorage.getItem(remindKey)) {
-    popupShown = true;
-    popup("⏰ Dernier jour !", `<p>${curWho}, il te reste ${left.length} tâche${left.length > 1 ? "s" : ""} cette semaine : ${left.map(t => t.icon + " " + t.name).join(", ")}.</p>`,
+    popup("Dernier jour de ta semaine", `<p>Il te reste ${left.length} tâche${left.length > 1 ? "s" : ""} : ${list(left)}.</p>`,
       () => localStorage.setItem(remindKey, "1"));
   }
 }
 
 // ---------- Affichage ----------
+let justTicked = null;
 function render() {
   if ($("app").hidden) return;
-  $("legend").innerHTML = PEOPLE.map(p => `<span class="chip" style="background:${COLORS[p]}">${p}</span>`).join("");
+  const me = meSel.value;
 
-  let html = `<tr><th class="first">Semaine</th>${TASKS.map(t => `<th title="${t.name}"><span class="ic">${t.icon}</span><span class="lbl">${t.short}</span></th>`).join("")}<th class="count"></th></tr>`;
+  // Bloc « cette semaine »
+  const ck = keyOf(thisMonday), who = personOf(ck), cdone = weekOf(ck).done || {};
+  const n = TASKS.filter(t => cdone[t.id]).length;
+  const helpers = [...new Set(TASKS.map(t => cdone[t.id]?.by).filter(b => b && b !== who && PEOPLE.includes(b)))];
+  const hero = $("hero");
+  hero.style.setProperty("--p", COLORS[who]);
+  hero.innerHTML = `
+    <div class="hero-line"><span>${me === who ? "C'est ta semaine" : "Cette semaine, c'est"}</span><span>${span(thisMonday)}</span></div>
+    <p class="who">${who}</p>
+    <p class="hero-status">${n === TASKS.length ? "Tout est fait, merci !" : `${n} tâche${n > 1 ? "s" : ""} faite${n > 1 ? "s" : ""} sur ${TASKS.length}`}${helpers.length ? `, avec l'aide de ${helpers.join(" et ")}` : ""}</p>
+    <div class="chips">${TASKS.map(t => { const d = cdone[t.id], helper = d && d.by !== who && COLORS[d.by];
+      return `<button class="chip${justTicked === t.id ? " just" : ""}" aria-pressed="${!!d}" data-t="${t.id}"${helper ? ` style="--h:${helper}"` : ""}>
+      <span class="ic" aria-hidden="true">${t.icon}</span><span class="lbl">${t.name}${helper ? `<span class="by">par ${d.by}</span>` : ""}</span><span class="tick" aria-hidden="true"></span></button>`; }).join("")}</div>
+`;
+  justTicked = null;
+  hero.querySelectorAll(".chip").forEach(b => b.onclick = () => { if (toggleTask(ck, b.dataset.t)) justTicked = b.dataset.t; });
+
+  // Planning
+  let html = `<tr><th class="wk">Semaine</th>${TASKS.map(t => `<th title="${t.name}"><span aria-hidden="true">${t.icon}</span></th>`).join("")}</tr>`;
   for (let i = range.from; i <= range.to; i++) {
-    const mon = addDays(thisMonday, i * 7), k = keyOf(mon), w = weekOf(k), who = personOf(k), done = w.done || {};
-    const n = TASKS.filter(t => done[t.id]).length;
-    const tracked = mon >= START;
-    const cls = [i === 0 ? "current" : "", i < 0 && tracked ? "past" : "", i < 0 && tracked && n < TASKS.length ? "incomplete" : ""].join(" ");
-    html += `<tr class="${cls}" style="background:${TINT[who]}">
-      <td class="first"><span class="dates">${fmt(mon)} – ${fmt(addDays(mon, 6))}</span>
-        <select data-k="${k}" style="background:${COLORS[who]}" aria-label="Personne semaine du ${fmt(mon)}">
-          ${PEOPLE.map(p => `<option ${p === who ? "selected" : ""}>${p}</option>`).join("")}</select></td>
-      ${TASKS.map(t => `<td class="cell"><button class="${done[t.id] ? "done" : "todo"}" data-k="${k}" data-t="${t.id}"
-          title="${t.name}${done[t.id] ? ` — fait le ${done[t.id].date}` : ""}" aria-label="${t.name} ${done[t.id] ? "fait" : "à faire"}"></button></td>`).join("")}
-      <td class="count" style="color:${n === TASKS.length ? "var(--ok)" : "var(--muted)"}">${n}/${TASKS.length}</td></tr>`;
+    const mon = addDays(thisMonday, i * 7), k = keyOf(mon), p = personOf(k), done = weekOf(k).done || {};
+    const cls = (i === 0 ? "now " : "") + (i < 0 && mon >= START ? "past" : "");
+    html += `<tr class="${cls}" style="--p:${COLORS[p]}">
+      <td class="wk"><span class="dates">${span(mon)}</span>
+        <button class="pill" data-k="${k}" aria-label="${p}, changer la personne de la semaine du ${span(mon)}">${p}</button></td>
+      ${TASKS.map(t => { const d = done[t.id], h = d && d.by !== p && COLORS[d.by];
+        return `<td><button class="cell ${d ? "done" : "todo"}" data-k="${k}" data-t="${t.id}"${h ? ` style="--h:${h}"` : ""}
+        aria-label="${t.name}, semaine du ${span(mon)} : ${d ? `fait par ${d.by}` : "pas fait"}"></button></td>`; }).join("")}</tr>`;
   }
   $("grid").innerHTML = html;
-  $("grid").querySelectorAll("select").forEach(s => s.onchange = () => write(`weeks/${s.dataset.k}/person`, s.value));
-  $("grid").querySelectorAll("td.cell button").forEach(b => b.onclick = () => {
-    const { k, t } = b.dataset, task = TASKS.find(x => x.id === t);
-    if ((weekOf(k).done || {})[t]) {
-      if (confirm(`Décocher « ${task.name} » ?`)) write(`weeks/${k}/done/${t}`, null);
-    } else write(`weeks/${k}/done/${t}`, { by: personOf(k), date: today() });
+  $("grid").querySelectorAll(".pill").forEach(b => b.onclick = async () => {
+    const k = b.dataset.k, cur = personOf(k);
+    const p = await pickPerson("Qui fait cette semaine ?", `Semaine du ${span(fromKey(k))}. Seule cette semaine change.`, cur);
+    if (p) setWeek(k, p);
   });
-
-  const notes = $("notes");
-  if (document.activeElement !== notes) notes.value = weekOf(keyOf(thisMonday)).notes || "";
+  $("grid").querySelectorAll(".cell").forEach(b => b.onclick = () => toggleTask(b.dataset.k, b.dataset.t));
+  $("legend").innerHTML = TASKS.map(t => `<span>${t.icon} ${t.name}</span>`).join("") +
+    `<span>Une case d'une autre couleur = quelqu'un a aidé.</span>`;
 
   // Réserves
   const stock = data.stock || {};
   $("stock").innerHTML = SUPPLIES.map(s => {
-    const st = stock[s.id] || { level: 0 };
-    return `<div class="item"><div class="top">${s.icon} ${s.name}
-        ${st.by ? `<small>mis à jour par ${st.by}<br>${st.date}</small>` : ""}</div>
-      <div class="seg">${LEVELS.map((l, i) =>
-        `<button class="s${i} ${(st.level || 0) === i ? "on" : ""}" data-s="${s.id}" data-l="${i}">${l}</button>`).join("")}</div>
-      <button class="buy" data-buy="${s.id}">🛍️ J'en ai acheté</button>
-      ${st.boughtBy ? `<div class="bought">Dernier achat : <b style="color:${COLORS[st.boughtBy] || "inherit"}">${st.boughtBy}</b> le ${st.boughtDate}</div>` : ""}
-      </div>`;
+    const st = stock[s.id] || {}, lv = st.level || 0;
+    return `<div class="supply">
+      <div class="supply-head"><span class="ic" aria-hidden="true">${s.icon}</span><b>${s.name}</b>
+        ${lv ? `<span class="badge l${lv}">${LEVELS[lv]}</span>` : ""}</div>
+      <div class="seg" role="group" aria-label="État des réserves : ${s.name}">${LEVELS.map((l, i) =>
+        `<button aria-pressed="${lv === i}" data-s="${s.id}" data-l="${i}">${l}</button>`).join("")}</div>
+      <div class="supply-foot">
+        <span class="meta">${st.boughtBy ? `Dernier achat : <b style="color:${COLORS[st.boughtBy] || "inherit"}">${esc(st.boughtBy)}</b>, le ${st.boughtDate}` : "Aucun achat noté"}</span>
+        <button class="btn btn-secondary" data-buy="${s.id}">J'en ai acheté</button>
+      </div></div>`;
   }).join("");
-  const needMe = () => { if (meSel.value) return meSel.value; alert("Choisis d'abord qui tu es en haut de la page 🙂"); meSel.focus(); return null; };
+  const needMe = () => {
+    if (meSel.value) return meSel.value;
+    askMe();
+    return null;
+  };
   document.querySelectorAll("#stock .seg button").forEach(b => b.onclick = () => {
     const me = needMe(); if (!me) return;
     const cur = stock[b.dataset.s] || {};
     write(`stock/${b.dataset.s}`, { ...cur, level: +b.dataset.l, by: me, date: today() });
   });
-  document.querySelectorAll("#stock .buy").forEach(b => b.onclick = () => {
+  document.querySelectorAll("#stock [data-buy]").forEach(b => b.onclick = () => {
     const me = needMe(); if (!me) return;
     const id = b.dataset.buy, cur = stock[id] || {};
     const count = { ...(cur.count || {}) }; count[me] = (count[me] || 0) + 1;
     write(`stock/${id}`, { ...cur, level: 0, by: me, date: today(), boughtBy: me, boughtDate: today(), count });
+    toast(`Achat noté pour ${me}`, () => write(`stock/${id}`, cur.level === undefined ? null : cur));
   });
-  const buys = Object.fromEntries(PEOPLE.map(p => [p, 0]));
-  Object.values(stock).forEach(s => Object.entries(s.count || {}).forEach(([p, n]) => { if (p in buys) buys[p] += n; }));
-  $("buyScores").innerHTML = PEOPLE.map(p => `<div class="score" style="--c:${COLORS[p]}"><b>${buys[p]}</b><span>${p}</span></div>`).join("");
 
-  const totals = Object.fromEntries(PEOPLE.map(p => [p, 0]));
-  Object.values(data.weeks || {}).forEach(wk => Object.values(wk.done || {}).forEach(x => { if (x.by in totals) totals[x.by]++; }));
-  $("scores").innerHTML = PEOPLE.map(p => `<div class="score" style="--c:${COLORS[p]}"><b>${totals[p]}</b><span>${p}</span></div>`).join("");
+  // Notes
+  const notes = $("notes");
+  if (document.activeElement !== notes && !notesDirty) notes.value = weekOf(ck).notes || "";
+  const hist = Object.entries(data.weeks || {})
+    .filter(([k, w]) => k !== ck && w.notes && w.notes.trim())
+    .sort(([a], [b]) => b.localeCompare(a));
+  $("history").innerHTML = hist.length ? hist.map(([k, w]) => {
+    const p = personOf(k);
+    return `<div class="note" style="--p:${COLORS[p]}"><div class="note-head">${span(fromKey(k))}, semaine de <b>${p}</b></div>
+      <div class="note-body">${esc(w.notes)}</div></div>`;
+  }).join("") : `<p class="empty">Les notes des semaines finies s'afficheront ici.</p>`;
+
+  // Compteurs
+  const tasks = Object.fromEntries(PEOPLE.map(p => [p, 0])), buys = Object.fromEntries(PEOPLE.map(p => [p, 0]));
+  Object.values(data.weeks || {}).forEach(wk => Object.values(wk.done || {}).forEach(x => { if (x.by in tasks) tasks[x.by]++; }));
+  Object.values(stock).forEach(s => Object.entries(s.count || {}).forEach(([p, c]) => { if (p in buys) buys[p] += c; }));
+  $("counts").innerHTML = `<tr><th>Coloc</th><th>Tâches faites</th><th>Achats</th></tr>` +
+    PEOPLE.map(p => `<tr style="--p:${COLORS[p]}"><td>${p}</td><td>${tasks[p]}</td><td>${buys[p]}</td></tr>`).join("");
 }
 
-let notesTimer;
-$("notes").oninput = e => {
+// Notes : bouton « Enregistrer » + enregistrement auto 1,5 s après la dernière frappe
+let notesTimer, notesDirty = false;
+const notesStatus = $("notesStatus");
+async function saveNotes() {
   clearTimeout(notesTimer);
-  const v = e.target.value;
-  notesTimer = setTimeout(() => write(`weeks/${keyOf(thisMonday)}/notes`, v), 600);
+  const v = $("notes").value.trim();
+  notesStatus.textContent = "Enregistrement…";
+  try {
+    await write(`weeks/${keyOf(thisMonday)}/notes`, v || null);
+    notesDirty = false;
+    notesStatus.textContent = "Enregistré";
+    $("saveNotes").disabled = true;
+  } catch (e) { console.error(e); notesStatus.textContent = "Pas enregistré. Vérifie le réseau et réessaie."; }
+}
+$("notes").oninput = () => {
+  notesDirty = true;
+  notesStatus.textContent = "Pas encore enregistré";
+  $("saveNotes").disabled = false;
+  clearTimeout(notesTimer);
+  notesTimer = setTimeout(saveNotes, 1500);
 };
+$("saveNotes").onclick = () => { saveNotes(); $("notes").blur(); };
+$("saveNotes").disabled = true;
 $("older").onclick = () => { range.from -= 4; render(); };
 $("newer").onclick = () => { range.to += 4; render(); };
 
+// Barre du bas : met en avant la section visible
+const tabs = [...document.querySelectorAll("#tabbar a")];
+const spy = new IntersectionObserver(entries => entries.forEach(e => {
+  if (!e.isIntersecting) return;
+  tabs.forEach(a => a.classList.toggle("on", a.getAttribute("href") === "#" + e.target.id));
+}), { rootMargin: "-45% 0px -50% 0px" });
+["hero", "planning", "sec-stock", "sec-notes"].forEach(id => spy.observe($(id)));
+
 // ---------- Démarrage ----------
 const saved = localStorage.getItem("menage-pwd");
-if (saved) {
+if (saved && /^\d{4}$/.test(saved)) {
+  pin = saved;
   connect(saved, false).then(res => {
-    if (res === true) { $("app").hidden = false; render(); checkPopup(); }
-    else { localStorage.removeItem("menage-pwd"); $("login").hidden = false; }
-  }).catch(() => { $("login").hidden = false; });
-} else $("login").hidden = false;
+    if (res === true) showApp();
+    else { localStorage.removeItem("menage-pwd"); pin = ""; $("login").hidden = false; }
+  }).catch(() => { pin = ""; $("login").hidden = false; });
+} else { localStorage.removeItem("menage-pwd"); $("login").hidden = false; }
 </script>
 </body>
 </html>
