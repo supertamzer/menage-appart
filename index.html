@@ -188,6 +188,49 @@
   .toast span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .toast button { background: #fff; color: var(--ink); border: 0; border-radius: 9px; min-height: 40px; padding: 0 14px; font-weight: 700; }
 
+  /* Champs de formulaire */
+  .field { display: block; margin-top: 12px; }
+  .field span { display: block; font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .field em { font-style: normal; font-weight: 400; color: var(--mute); }
+  .field input, .missing input { width: 100%; min-height: 48px; font-size: 16px; padding: 10px 12px; border: 1.5px solid var(--grout);
+                                 border-radius: 12px; background: var(--paper); }
+  .check { display: flex; align-items: center; gap: 10px; margin-top: 14px; font-size: 15px; min-height: 32px; }
+  .check input { width: 22px; height: 22px; accent-color: var(--ink); }
+  .missing { display: flex; gap: 8px; margin-top: 10px; }
+  .missing input { min-height: 44px; }
+  .need-list { list-style: none; margin: 10px 0 0; padding: 0; }
+  .need-list li { display: flex; align-items: center; gap: 8px; padding: 8px 0 8px 12px; border-left: 4px solid var(--bad); }
+  .need-list li + li { margin-top: 4px; }
+  .need-txt { flex: 1; min-width: 0; font-weight: 700; overflow-wrap: anywhere; }
+  .need-txt .meta { display: block; font-weight: 400; }
+  .need-one { width: 100%; margin-top: 10px; }
+  .needs { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+  .needs li { display: inline-flex; align-items: center; gap: 4px; background: #FBE3E0; color: #7A1E16; border-radius: 99px;
+              padding: 2px 2px 2px 12px; font-size: 15px; font-weight: 700; }
+  .needs li .del { width: 32px; height: 32px; color: #7A1E16; }
+  .needs-title { font-size: 13px; color: var(--mute); margin: 10px 0 -4px; }
+  /* Historique des achats */
+  .buy-row { display: grid; grid-template-columns: auto 1fr auto auto; gap: 4px 10px; align-items: center;
+             padding: 10px 0 10px 12px; border-left: 4px solid var(--p); margin-left: 4px; }
+  .buy-row + .buy-row { margin-top: 4px; }
+  .buy-row .ic { font-size: 20px; }
+  .buy-row .what { font-weight: 700; overflow-wrap: anywhere; }
+  .buy-row .meta { grid-column: 2 / 3; }
+  .buy-row .amt { font: 700 16px/1 var(--display); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .del { border: 0; background: transparent; color: var(--mute); width: 40px; height: 40px; border-radius: 10px; font-size: 16px; }
+  .note { position: relative; padding-right: 40px; }
+  .note .del { position: absolute; right: 0; top: 4px; }
+
+  /* Qui a mis combien */
+  .money { padding: 6px 14px 12px; }
+  .money-row { display: grid; grid-template-columns: 76px 1fr auto; align-items: center; gap: 10px; padding: 8px 0; }
+  .money-row b { font-size: 15px; }
+  .bar { height: 12px; background: var(--tile); border-radius: 99px; overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--p); border-radius: 99px; }
+  .money-row .amt { font: 700 16px/1 var(--display); font-variant-numeric: tabular-nums; text-align: right; min-width: 78px; }
+  .money-row .diff { grid-column: 2 / 4; font-size: 13px; color: var(--mute); margin-top: -4px; }
+  .money-total { border-top: 1.5px solid var(--grout); margin-top: 4px; padding-top: 10px; font-size: 14px; color: var(--mute); }
+
   /* Choix d'une personne */
   .who-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
   .who-grid button { min-height: 60px; border: 3px solid transparent; border-radius: var(--r-md); background: var(--c); color: #fff;
@@ -251,6 +294,20 @@
   </div>
 </div>
 
+<!-- Achat -->
+<div class="overlay" id="buySheet" hidden role="dialog" aria-modal="true" aria-labelledby="buyTitle">
+  <form class="sheet" id="buyForm">
+    <h3 id="buyTitle"></h3>
+    <label class="field"><span>Quoi ?</span>
+      <input id="buyWhat" autocomplete="off" required></label>
+    <label class="field"><span>Montant en CHF <em>(facultatif)</em></span>
+      <input id="buyAmount" inputmode="decimal" autocomplete="off" placeholder="ex. 4.50"></label>
+    <p class="meta" id="buyWho"></p>
+    <button class="btn btn-primary" type="submit">Enregistrer l'achat</button>
+    <button class="btn btn-ghost" type="button" id="buyCancel">Annuler</button>
+  </form>
+</div>
+
 <nav class="tabbar" id="tabbar" hidden aria-label="Aller à">
   <a href="#hero" class="on"><span aria-hidden="true">🧽</span>Semaine</a>
   <a href="#planning"><span aria-hidden="true">🗓️</span>Planning</a>
@@ -281,15 +338,23 @@
 
   <h2 id="sec-stock">Réserves</h2>
   <div class="panel" id="stock"></div>
-
-  <h2 id="sec-notes">Notes de la semaine</h2>
-  <textarea id="notes" placeholder="Absences, changements de semaine, remarques…" aria-label="Notes de la semaine"></textarea>
-  <div class="notes-bar">
-    <span class="meta" id="notesStatus" role="status" aria-live="polite"></span>
-    <button class="btn btn-primary" id="saveNotes">Enregistrer</button>
+  <div class="history">
+    <h3>Qui a mis combien</h3>
+    <div class="panel money" id="money"></div>
   </div>
   <div class="history">
-    <h3>Notes des semaines passées</h3>
+    <h3>Historique des achats</h3>
+    <div id="purchases"></div>
+  </div>
+
+  <h2 id="sec-notes">Notes</h2>
+  <textarea id="notes" placeholder="Absences, changements de semaine, remarques…" aria-label="Nouvelle note"></textarea>
+  <div class="notes-bar">
+    <span class="meta" id="notesStatus" role="status" aria-live="polite"></span>
+    <button class="btn btn-primary" id="saveNotes">Enregistrer la note</button>
+  </div>
+  <div class="history">
+    <h3>Historique des notes</h3>
     <div id="history"></div>
   </div>
 
@@ -329,7 +394,7 @@ const SUPPLIES = [
   { id: "bags",     name: "Sacs poubelle",     icon: "🛍️" },
   { id: "tp",       name: "PQ",                icon: "🧻" },
 ];
-const LEVELS = ["Il y en a", "Bientôt fini", "À acheter"];
+// Réserves : pas d'états compliqués. On note ce qu'il faut, puis on le marque acheté.
 // Rotation : 1 personne par semaine, jamais deux fois à la suite, sans fin.
 // 9–15 nov. = Connor, 16–22 nov. = Antoine, puis Rémi, Noé, et on recommence.
 const ROTATION = ["Connor", "Antoine", "Rémi", "Noé"];
@@ -348,10 +413,14 @@ const span = mon => { const e = addDays(mon, 6); return mon.getMonth() === e.get
 const today = () => fmt(new Date());
 const thisMonday = mondayOf(new Date());
 const defaultPerson = monday => ROTATION[mod(weeksBetween(REF_MONDAY, monday), ROTATION.length)];
+// Liste « à acheter » d'une réserve : stock/<id>/needs/<nid> = { text, by }
+const needsOf = st => Object.entries(st?.needs || {}).map(([nid, n]) => ({ nid, ...n })).sort((a, b) => (a.ts || 0) - (b.ts || 0));
+const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const chf = n => n.toFixed(2).replace(/\.00$/, ".–") + " CHF";
 const esc = t => String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 // ---------- État ----------
-let data = { weeks: {}, stock: {} };
+let data = { weeks: {}, stock: {}, notes: {}, purchases: {} };
 let write = () => {};
 // Le suivi commence la semaine du 9 nov. 2026 : rien avant ne compte comme « pas fait ».
 const START = REF_MONDAY;
@@ -403,14 +472,17 @@ async function connect(pin, createIfMissing) {
   const key = await keyFromPin(pin);
   if (LOCAL_MODE) {
     const KEY = "menage-local-" + key;
-    data = JSON.parse(localStorage.getItem(KEY) || '{"weeks":{},"stock":{}}');
+    data = JSON.parse(localStorage.getItem(KEY) || '{"weeks":{},"stock":{},"notes":{},"purchases":{}}');
     setSync("local", "Mode test : données sur cet appareil");
     loaded.add("weeks"); loaded.add("stock");
+    checkNewNeeds();
+    // autre onglet en mode test = autre coloc : on recharge ses changements
+    addEventListener("storage", e => { if (e.key === KEY) { data = JSON.parse(e.newValue || "{}"); render(); checkNewNeeds(); } });
     write = (path, value) => {
       const parts = path.split("/"); let o = data;
       parts.slice(0, -1).forEach(p => o = (o[p] ||= {}));
       if (value === null) delete o[parts.at(-1)]; else o[parts.at(-1)] = value;
-      localStorage.setItem(KEY, JSON.stringify(data)); render();
+      localStorage.setItem(KEY, JSON.stringify(data)); render(); checkNewNeeds();
       return Promise.resolve();
     };
     return true;
@@ -425,8 +497,8 @@ async function connect(pin, createIfMissing) {
     await set(ref(db, `${base}/meta`), { created: Date.now() });
   }
   setSync("", "Connexion…");
-  for (const k of ["weeks", "stock"]) {
-    onValue(ref(db, `${base}/${k}`), snap => { data[k] = snap.val() || {}; loaded.add(k); setSync("on", "En ligne"); render(); checkPopup(); },
+  for (const k of ["weeks", "stock", "notes", "purchases"]) {
+    onValue(ref(db, `${base}/${k}`), snap => { data[k] = snap.val() || {}; loaded.add(k); setSync("on", "En ligne"); render(); checkPopup(); if (k === "stock") checkNewNeeds(); },
             err => { setSync("off", "Erreur d'accès"); console.error(err); });
   }
   onValue(ref(db, ".info/connected"), s => { if (!s.val() && loaded.size) setSync("off", "Hors ligne, les changements partiront au retour du réseau"); });
@@ -535,13 +607,13 @@ function checkPopup() {
         () => localStorage.setItem(seenKey, String(missing.length)));
     }
   }
-  // 2. Réserves bientôt finies ou à acheter, à chaque ouverture
+  // 2. Liste de courses non vide, à chaque ouverture
   const stock = data.stock || {};
-  const low = SUPPLIES.filter(x => (stock[x.id]?.level || 0) > 0);
+  const low = SUPPLIES.filter(x => needsOf(stock[x.id]).length);
   if (low.length) {
-    popup(low.length > 1 ? "Des réserves sont presque vides" : "Une réserve est presque vide",
-      low.map(x => `<p>${x.icon} <b>${x.name}</b> : ${LEVELS[stock[x.id].level].toLowerCase()}</p>`).join("") +
-      `<p class="meta">Quand c'est acheté, appuie sur « J'en ai acheté » dans Réserves.</p>`);
+    popup("Il faut acheter",
+      low.map(x => `<p>${x.icon} <b>${x.name}</b> : ${needsOf(stock[x.id]).map(n => esc(n.text)).join(", ")}</p>`).join("") +
+      `<p class="meta">Quand c'est fait, appuie sur « Acheté » dans Réserves.</p>`);
   }
   // 3. Dimanche : rappel à la personne de la semaine
   const cur = keyOf(thisMonday), curWho = personOf(cur);
@@ -551,6 +623,22 @@ function checkPopup() {
     popup("Dernier jour de ta semaine", `<p>Il te reste ${left.length} tâche${left.length > 1 ? "s" : ""} : ${list(left)}.</p>`,
       () => localStorage.setItem(remindKey, "1"));
   }
+}
+
+// ---------- « Il faut » en direct ----------
+// Dès qu'un coloc ajoute un article à la liste, tous ceux qui ont le site ouvert reçoivent un pop-up.
+let knownNeeds = null;
+function checkNewNeeds() {
+  const all = SUPPLIES.flatMap(s => needsOf((data.stock || {})[s.id]).map(n => ({ ...n, s })));
+  if (knownNeeds === null) { knownNeeds = new Set(all.map(n => n.nid)); return; }   // 1er chargement : rien
+  const fresh = all.filter(n => !knownNeeds.has(n.nid) && n.by !== meSel.value);
+  all.forEach(n => knownNeeds.add(n.nid));
+  if (!fresh.length || $("app").hidden) return;
+  const by = [...new Set(fresh.map(n => n.by))].join(" et ");
+  popup(`${by} dit qu'il faut acheter`,
+    fresh.map(n => `<p>${n.s.icon} <b>${esc(n.text)}</b></p>`).join("") +
+    `<p class="meta">Quand c'est fait, appuie sur « Acheté » dans Réserves.</p>`);
+  navigator.vibrate?.([30, 60, 30]);
 }
 
 // ---------- Affichage ----------
@@ -598,18 +686,27 @@ function render() {
   $("legend").innerHTML = TASKS.map(t => `<span>${t.icon} ${t.name}</span>`).join("") +
     `<span>Une case d'une autre couleur = quelqu'un a aidé.</span>`;
 
-  // Réserves
+  // Réserves : « il faut » → « acheté »
   const stock = data.stock || {};
+  const purchases = Object.entries(data.purchases || {}).map(([id, p]) => ({ id, ...p })).sort((a, b) => b.ts - a.ts);
   $("stock").innerHTML = SUPPLIES.map(s => {
-    const st = stock[s.id] || {}, lv = st.level || 0;
+    const needs = needsOf(stock[s.id]);
+    const last = purchases.find(p => p.item === s.id);
+    const free = s.id === "products";   // produits ménagers : on écrit lequel
     return `<div class="supply">
       <div class="supply-head"><span class="ic" aria-hidden="true">${s.icon}</span><b>${s.name}</b>
-        ${lv ? `<span class="badge l${lv}">${LEVELS[lv]}</span>` : ""}</div>
-      <div class="seg" role="group" aria-label="État des réserves : ${s.name}">${LEVELS.map((l, i) =>
-        `<button aria-pressed="${lv === i}" data-s="${s.id}" data-l="${i}">${l}</button>`).join("")}</div>
+        <span class="badge ${needs.length ? "l2" : "l0"}">${needs.length ? `${needs.length} à acheter` : "Il y en a"}</span></div>
+      ${needs.length ? `<ul class="need-list">${needs.map(n => `
+        <li><span class="need-txt">${esc(n.text)}<span class="meta">demandé par ${esc(n.by)}${n.date ? `, le ${n.date}` : ""}</span></span>
+          <button class="btn btn-primary" data-bought="${s.id}" data-nid="${n.nid}">Acheté</button>
+          <button class="del" data-unneed="${s.id}" data-nid="${n.nid}" aria-label="Retirer ${esc(n.text)} sans l'acheter">✕</button></li>`).join("")}</ul>` : ""}
+      ${free ? `<form class="missing" data-need="${s.id}">
+          <input placeholder="Quel produit faut-il ?" aria-label="Produit ménager qu'il faut acheter" enterkeyhint="done">
+          <button class="btn btn-secondary" type="submit">Il faut</button></form>`
+        : (needs.length ? "" : `<button class="btn btn-secondary need-one" data-needone="${s.id}">Il en faut</button>`)}
       <div class="supply-foot">
-        <span class="meta">${st.boughtBy ? `Dernier achat : <b style="color:${COLORS[st.boughtBy] || "inherit"}">${esc(st.boughtBy)}</b>, le ${st.boughtDate}` : "Aucun achat noté"}</span>
-        <button class="btn btn-secondary" data-buy="${s.id}">J'en ai acheté</button>
+        <span class="meta">${last ? `Dernier achat : <b style="color:${COLORS[last.by] || "inherit"}">${esc(last.by)}</b>, le ${last.date}` : "Aucun achat noté"}</span>
+        <button class="ghost" data-buyother="${s.id}">Autre achat</button>
       </div></div>`;
   }).join("");
   const needMe = () => {
@@ -617,62 +714,134 @@ function render() {
     askMe();
     return null;
   };
-  document.querySelectorAll("#stock .seg button").forEach(b => b.onclick = () => {
+  const addNeed = (id, text) => {
     const me = needMe(); if (!me) return;
-    const cur = stock[b.dataset.s] || {};
-    write(`stock/${b.dataset.s}`, { ...cur, level: +b.dataset.l, by: me, date: today() });
+    const nid = newId();
+    write(`stock/${id}/needs/${nid}`, { text, by: me, date: today(), ts: Date.now() });
+    toast(`Ajouté à la liste : ${text}`, () => write(`stock/${id}/needs/${nid}`, null));
+  };
+  document.querySelectorAll("#stock form[data-need]").forEach(f => f.onsubmit = e => {
+    e.preventDefault();
+    const inp = f.querySelector("input"), v = inp.value.trim();
+    if (!v) { inp.focus(); return; }
+    addNeed(f.dataset.need, v); inp.value = "";
   });
-  document.querySelectorAll("#stock [data-buy]").forEach(b => b.onclick = () => {
-    const me = needMe(); if (!me) return;
-    const id = b.dataset.buy, cur = stock[id] || {};
-    const count = { ...(cur.count || {}) }; count[me] = (count[me] || 0) + 1;
-    write(`stock/${id}`, { ...cur, level: 0, by: me, date: today(), boughtBy: me, boughtDate: today(), count });
-    toast(`Achat noté pour ${me}`, () => write(`stock/${id}`, cur.level === undefined ? null : cur));
+  document.querySelectorAll("#stock [data-needone]").forEach(b => b.onclick = () =>
+    addNeed(b.dataset.needone, SUPPLIES.find(x => x.id === b.dataset.needone).name));
+  document.querySelectorAll("#stock [data-unneed]").forEach(b => b.onclick = () => {
+    const id = b.dataset.unneed, nid = b.dataset.nid, old = stock[id].needs[nid];
+    write(`stock/${id}/needs/${nid}`, null);
+    toast(`Retiré : ${old.text}`, () => write(`stock/${id}/needs/${nid}`, old));
+  });
+  document.querySelectorAll("#stock [data-bought]").forEach(b => b.onclick = () => { if (needMe()) openBuy(b.dataset.bought, b.dataset.nid); });
+  document.querySelectorAll("#stock [data-buyother]").forEach(b => b.onclick = () => { if (needMe()) openBuy(b.dataset.buyother, null); });
+
+  // Qui a mis combien
+  const paid = Object.fromEntries(PEOPLE.map(p => [p, 0]));
+  purchases.forEach(p => { if (p.by in paid) paid[p.by] += p.amount || 0; });
+  const total = Object.values(paid).reduce((a, b) => a + b, 0), share = Math.round(total / PEOPLE.length * 100) / 100;
+  const maxPaid = Math.max(...Object.values(paid), 1);
+  $("money").innerHTML = total ? [...PEOPLE].sort((a, b) => paid[b] - paid[a]).map(p => {
+    const d = Math.round((paid[p] - share) * 100) / 100;
+    return `<div class="money-row" style="--p:${COLORS[p]}"><b>${p}</b>
+      <span class="bar"><i style="width:${paid[p] / maxPaid * 100}%"></i></span>
+      <span class="amt">${chf(paid[p])}</span>
+      <span class="diff">${Math.abs(d) < 0.05 ? "Pile la part de chacun" : d > 0 ? `A mis ${chf(d)} de plus que sa part` : `A mis ${chf(-d)} de moins que sa part`}</span></div>`;
+  }).join("") + `<p class="money-total">Total ${chf(total)}, soit ${chf(share)} par personne.</p>`
+  : `<p class="empty" style="padding-top:8px">Les montants entrés avec « Acheté » s'additionnent ici.</p>`;
+
+  // Historique des achats
+  const supplyOf = id => SUPPLIES.find(x => x.id === id) || { icon: "🛒", name: "" };
+  $("purchases").innerHTML = purchases.length ? purchases.map(p => `
+    <div class="buy-row" style="--p:${COLORS[p.by] || "var(--grout)"}">
+      <span class="ic" aria-hidden="true">${supplyOf(p.item).icon}</span>
+      <span class="what">${esc(p.what)}</span>
+      <span class="amt">${typeof p.amount === "number" ? chf(p.amount) : ""}</span>
+      <button class="del" data-delbuy="${p.id}" aria-label="Supprimer l'achat ${esc(p.what)}">✕</button>
+      <span class="meta">${esc(p.by)}, le ${p.date}</span>
+    </div>`).join("") : `<p class="empty">Quand quelqu'un appuie sur « J'ai acheté », l'achat s'affiche ici.</p>`;
+  document.querySelectorAll("[data-delbuy]").forEach(b => b.onclick = () => {
+    const id = b.dataset.delbuy, old = data.purchases[id];
+    write(`purchases/${id}`, null);
+    toast("Achat supprimé", () => write(`purchases/${id}`, old));
   });
 
-  // Notes
-  const notes = $("notes");
-  if (document.activeElement !== notes && !notesDirty) notes.value = weekOf(ck).notes || "";
-  const hist = Object.entries(data.weeks || {})
-    .filter(([k, w]) => k !== ck && w.notes && w.notes.trim())
-    .sort(([a], [b]) => b.localeCompare(a));
-  $("history").innerHTML = hist.length ? hist.map(([k, w]) => {
-    const p = personOf(k);
-    return `<div class="note" style="--p:${COLORS[p]}"><div class="note-head">${span(fromKey(k))}, semaine de <b>${p}</b></div>
-      <div class="note-body">${esc(w.notes)}</div></div>`;
-  }).join("") : `<p class="empty">Les notes des semaines finies s'afficheront ici.</p>`;
+  // Notes : historique, la plus récente en haut
+  const notesList = Object.entries(data.notes || {}).map(([id, n]) => ({ id, ...n })).sort((a, b) => b.ts - a.ts);
+  // anciennes notes (une par semaine) gardées dans l'historique
+  Object.entries(data.weeks || {}).forEach(([k, w]) => { if (w.notes) notesList.push({ id: null, text: w.notes, by: personOf(k), date: fmt(fromKey(k)), ts: +fromKey(k), week: k }); });
+  notesList.sort((a, b) => b.ts - a.ts);
+  $("history").innerHTML = notesList.length ? notesList.map(n => `
+    <div class="note" style="--p:${COLORS[n.by] || "var(--grout)"}">
+      <div class="note-head"><b>${esc(n.by)}</b>, le ${n.date}${n.week ? `, semaine de ${personOf(n.week)}` : ""}</div>
+      <div class="note-body">${esc(n.text)}</div>
+      ${n.id ? `<button class="del" data-delnote="${n.id}" aria-label="Supprimer cette note">✕</button>` : ""}
+    </div>`).join("") : `<p class="empty">Écris une note et appuie sur « Enregistrer la note » : elle s'affiche ici.</p>`;
+  document.querySelectorAll("[data-delnote]").forEach(b => b.onclick = () => {
+    const id = b.dataset.delnote, old = data.notes[id];
+    write(`notes/${id}`, null);
+    toast("Note supprimée", () => write(`notes/${id}`, old));
+  });
 
   // Compteurs
   const tasks = Object.fromEntries(PEOPLE.map(p => [p, 0])), buys = Object.fromEntries(PEOPLE.map(p => [p, 0]));
   Object.values(data.weeks || {}).forEach(wk => Object.values(wk.done || {}).forEach(x => { if (x.by in tasks) tasks[x.by]++; }));
-  Object.values(stock).forEach(s => Object.entries(s.count || {}).forEach(([p, c]) => { if (p in buys) buys[p] += c; }));
-  $("counts").innerHTML = `<tr><th>Coloc</th><th>Tâches faites</th><th>Achats</th></tr>` +
-    PEOPLE.map(p => `<tr style="--p:${COLORS[p]}"><td>${p}</td><td>${tasks[p]}</td><td>${buys[p]}</td></tr>`).join("");
+  const spent = Object.fromEntries(PEOPLE.map(p => [p, 0]));
+  Object.values(stock).forEach(s => Object.entries(s.count || {}).forEach(([p, c]) => { if (p in buys) buys[p] += c; }));  // anciens achats
+  purchases.forEach(p => { if (p.by in buys) { buys[p.by]++; spent[p.by] += p.amount || 0; } });
+  $("counts").innerHTML = `<tr><th>Coloc</th><th>Tâches</th><th>Achats</th><th>Dépensé</th></tr>` +
+    PEOPLE.map(p => `<tr style="--p:${COLORS[p]}"><td>${p}</td><td>${tasks[p]}</td><td>${buys[p]}</td><td>${spent[p] ? chf(spent[p]) : "–"}</td></tr>`).join("");
 }
 
-// Notes : bouton « Enregistrer » + enregistrement auto 1,5 s après la dernière frappe
-let notesTimer, notesDirty = false;
+// Notes : chaque « Enregistrer la note » ajoute une entrée dans l'historique et vide le champ.
 const notesStatus = $("notesStatus");
-async function saveNotes() {
-  clearTimeout(notesTimer);
-  const v = $("notes").value.trim();
+async function saveNote() {
+  const text = $("notes").value.trim();
+  if (!text) { notesStatus.textContent = "Écris d'abord quelque chose."; $("notes").focus(); return; }
+  const by = meSel.value; if (!by) { askMe(); return; }
+  const id = newId(), entry = { text, by, date: today(), ts: Date.now(), week: keyOf(thisMonday) };
   notesStatus.textContent = "Enregistrement…";
   try {
-    await write(`weeks/${keyOf(thisMonday)}/notes`, v || null);
-    notesDirty = false;
-    notesStatus.textContent = "Enregistré";
-    $("saveNotes").disabled = true;
-  } catch (e) { console.error(e); notesStatus.textContent = "Pas enregistré. Vérifie le réseau et réessaie."; }
+    await write(`notes/${id}`, entry);
+    $("notes").value = ""; notesStatus.textContent = "";
+    $("notes").blur();
+    toast("Note enregistrée", () => { write(`notes/${id}`, null); $("notes").value = text; });
+  } catch (e) { console.error(e); notesStatus.textContent = "Pas enregistrée. Vérifie le réseau et réessaie."; }
 }
-$("notes").oninput = () => {
-  notesDirty = true;
-  notesStatus.textContent = "Pas encore enregistré";
-  $("saveNotes").disabled = false;
-  clearTimeout(notesTimer);
-  notesTimer = setTimeout(saveNotes, 1500);
+$("saveNotes").onclick = saveNote;
+$("notes").oninput = () => { notesStatus.textContent = ""; };
+
+// Feuille « Acheté » : depuis un élément de la liste (il disparaît de la liste) ou « Autre achat »
+let buyItem = null, buyNeed = null;
+function openBuy(id, nid) {
+  buyItem = id; buyNeed = nid;
+  const s = SUPPLIES.find(x => x.id === id), need = nid ? (data.stock?.[id]?.needs || {})[nid] : null;
+  $("buyTitle").textContent = need ? `Acheté : ${need.text}` : `Autre achat : ${s.name}`;
+  $("buyWhat").value = need ? need.text : (id === "products" ? "" : s.name);
+  $("buyWhat").placeholder = id === "products" ? "ex. liquide vaisselle" : s.name;
+  $("buyAmount").value = "";
+  $("buyWho").textContent = `Enregistré au nom de ${meSel.value}, le ${today()}`;
+  $("buySheet").hidden = false;
+  ($("buyWhat").value ? $("buyAmount") : $("buyWhat")).focus();
+}
+$("buyCancel").onclick = () => { $("buySheet").hidden = true; };
+$("buyForm").onsubmit = e => {
+  e.preventDefault();
+  const what = $("buyWhat").value.trim(); if (!what) { $("buyWhat").focus(); return; }
+  const raw = $("buyAmount").value.trim().replace(",", ".").replace(/[^\d.]/g, "");
+  const amount = raw ? Math.round(parseFloat(raw) * 100) / 100 : null;
+  if (raw && !(amount >= 0)) { $("buyAmount").focus(); return; }
+  const id = newId(), me = meSel.value, item = buyItem, nid = buyNeed;
+  const oldNeed = nid ? data.stock?.[item]?.needs?.[nid] : null;
+  write(`purchases/${id}`, { item, what, amount, by: me, date: today(), ts: Date.now() });
+  if (nid) write(`stock/${item}/needs/${nid}`, null);
+  $("buySheet").hidden = true;
+  toast(`Acheté : ${what}${amount ? `, ${chf(amount)}` : ""}`, () => {
+    write(`purchases/${id}`, null);
+    if (oldNeed) write(`stock/${item}/needs/${nid}`, oldNeed);
+  });
 };
-$("saveNotes").onclick = () => { saveNotes(); $("notes").blur(); };
-$("saveNotes").disabled = true;
+
 $("older").onclick = () => { range.from -= 4; render(); };
 $("newer").onclick = () => { range.to += 4; render(); };
 
